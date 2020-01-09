@@ -20,7 +20,7 @@ Functions include:
     
 Known issues:
     
-    - These functions mainly fix the source catalog files (including cookbook.cat and *_1.cat) produced by sextractor and axeiol.py. The issues about these files were posted in https://github.com/spacetelescope/pyaxe with tickets [#5](https://github.com/spacetelescope/pyaxe/issues/5) and [#6](https://github.com/spacetelescope/pyaxe/issues/6).
+- These functions mainly fix the source catalog files (including cookbook.cat and *_1.cat) produced by sextractor and axeiol.py. The issues about these files were posted in https://github.com/spacetelescope/pyaxe with tickets [#5](https://github.com/spacetelescope/pyaxe/issues/5) and [#6](https://github.com/spacetelescope/pyaxe/issues/6).
     
 v.1.0.0
 
