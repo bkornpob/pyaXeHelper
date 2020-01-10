@@ -1,6 +1,7 @@
-import copy
+import copy,os,glob
 import pandas as pd
 import numpy as np
+from astropy.io import fits
 
 def change_catalog_order(catalog):
     x = read_catalog(catalog)
@@ -61,3 +62,78 @@ def select_source(v1,v2,catalog,method='RADEC'):
     dd = np.sqrt(dx**2 + dy**2)
     index = np.argmin(dd)
     return CATALOG.iloc[index,:]
+
+def make_meta(FILES):
+    GID,DID = {},{}
+    for i,ii in enumerate(FILES):
+        hdr = fits.open(ii)['PRIMARY'].header
+        xx = hdr['FILTER']
+        if xx[0]=='G':
+            GID[i] = {}
+            GID[i]['FILE_ORIG'] = ii
+            GID[i]['FILTER'] = xx
+            GID[i]['EXPSTART'] = hdr['EXPSTART']
+            GID[i]['POSTARG1'] = hdr['POSTARG1']
+            GID[i]['POSTARG2'] = hdr['POSTARG2']
+        elif xx[0]=='F':
+            DID[i] = {}
+            DID[i]['FILE_ORIG'] = ii
+            DID[i]['FILTER'] = xx
+            DID[i]['EXPSTART'] = hdr['EXPSTART']
+            DID[i]['POSTARG1'] = hdr['POSTARG1']
+            DID[i]['POSTARG2'] = hdr['POSTARG2']
+    GID = _make_pairs(GID,DID)
+    return GID,DID
+
+def _make_pairs(GID,DID):
+    x = pd.DataFrame(DID).T
+    x.reset_index(drop=False, inplace=True)
+    x.rename(columns={"index": "ID"}, inplace=True)
+    for i in GID:
+        x2 = GID[i]['EXPSTART']
+        x3 = x['EXPSTART'].values
+        x4 = np.abs(x3-x2)
+        index = np.argmin(x4)
+        GID[i]['DIRECT'] = x.iloc[index].to_dict()   
+    return GID
+
+def prepare_folders(GID):
+    # GRISM/
+    x = glob.glob('*')
+    if 'GRISM' not in x:
+        os.mkdir('GRISM')
+    for i in GID:
+        x1 = GID[i]['FILE_ORIG']
+        x2 = 'GRISM/'+x1.split('/')[-1]
+        os.system("cp {0} {1}".format(x1,x2))
+        GID[i]['FILE_NEW'] = x2.split('/')[-1:]
+    x = open("GRISM/GRISM.lis","w") 
+    for i in GID:
+        x.writelines(GID[i]['FILE_NEW'])
+        x.write('\n')
+    x.close()
+    # DIRECT/
+    x = glob.glob('*')
+    if 'DIRECT' not in x:
+        os.mkdir('DIRECT')
+    for i in GID:
+        x1 = GID[i]['DIRECT']['FILE_ORIG']
+        x2 = 'DIRECT/'+x1.split('/')[-1]
+        os.system("cp {0} {1}".format(x1,x2))
+        GID[i]['DIRECT']['FILE_NEW'] = x2.split('/')[-1]
+    x = open("DIRECT/DIRECT.lis","w") 
+    for i in GID:
+        x.writelines(GID[i]['DIRECT']['FILE_NEW'])
+        x.write('\n')
+    x.close()
+
+def make_axelis(GID):
+    x = open("aXe.lis","w") 
+    for i in GID:
+        x1 = GID[i]['FILE_ORIG'].split('/')[-1]
+        x2 = GID[i]['DIRECT']['FILE_ORIG'].split('/')[-1].split('.')[0]+'_1.cat'
+        x3 = GID[i]['DIRECT']['FILE_ORIG'].split('/')[-1]
+        x.writelines('{0} {1} {2}'.format(x1,x2,x3))
+        x.write('\n')
+    x.close()
+    
