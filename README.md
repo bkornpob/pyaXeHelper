@@ -1,5 +1,9 @@
 # pyaXeHelper
 
+Installation
+    
+    pip install pyaxehelper
+    
 This package contains functions helping pyaXe. This works with:
 
     - pyaxe version '0.1.dev29+gf57de55.d20200106'
