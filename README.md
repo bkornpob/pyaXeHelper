@@ -28,7 +28,7 @@ Functions include:
     
     - prepare_folders() helps preparing folders GRISM/ and DIRECT/. It takes the dictionary output from make_meta() with the grism-direct pair suggestion (i.e., only GID is the input for this function), and processes grism and direct files stated in the dictionary. Each file is copied to the corresponding location. GRISM.lis and DIRECT.lis are constructed at the end.
     
-    make_axelis() constructs an aXe.lis file. It takes GID (i.e., an output from make_meta) and utilizes grism-direct pair info.
+    - make_axelis() constructs an aXe.lis file. It takes GID (i.e., an output from make_meta) and utilizes grism-direct pair info.
         
 Known issues:
     
