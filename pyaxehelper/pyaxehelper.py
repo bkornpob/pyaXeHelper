@@ -2,6 +2,8 @@ import copy,os,glob
 import pandas as pd
 import numpy as np
 from astropy.io import fits
+from astropy.stats import sigma_clipped_stats
+from scipy.interpolate import interp1d
 
 def change_catalog_order(catalog):
     x = read_catalog(catalog)
@@ -137,3 +139,27 @@ def make_axelis(GID):
         x.write('\n')
     x.close()
     
+def calculate_median(FILES,ID,WMIN,WMAX,DW):
+    out = {}
+    # make common wavelength grids [WMIN,WMAX]
+    WGRID = np.arange(WMIN,WMAX+DW,step=DW)
+    for ss,s in enumerate(FILES):
+        # for each image, make interp1d to common grids of an object ID
+        d1 = fits.open(s)["BEAM_%dA" % (ID)].data
+        w = d1["LAMBDA"]
+        f = d1["FLUX"]
+        mod_f = interp1d(w,f,kind='linear',bounds_error=False,fill_value=np.nan)
+        fmod = mod_f(WGRID)
+        # store output
+        out[ss] = fmod
+    
+    dataframe = pd.DataFrame(out)
+    x2 = []
+    for i in np.arange(0,len(dataframe),step=1):
+        # for each wavelength grid, calculate median with sigma clipping
+        x = dataframe.iloc[i]
+        mean,median,stddev = sigma_clipped_stats(x,sigma=3.,maxiters=5,cenfunc='median')
+        x2.append(median)
+    # store output
+    dataframe['MEDIAN'] = x2
+    return WGRID,dataframe
